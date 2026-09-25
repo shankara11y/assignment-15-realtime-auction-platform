@@ -1,5 +1,8 @@
 # Real-Time Live Auction & Bidding Engine (Socket.io)
 
+
+DEPLOYED LINK : https://assignment-15-realtime-auction-platform-kqsy.onrender.com/
+
 ![Node.js](https://img.shields.io/badge/Node.js-v24.20.0-green?logo=node.js)
 ![Socket.io](https://img.shields.io/badge/Socket.io-v4.8.1-black?logo=socket.io)
 ![Express](https://img.shields.io/badge/Express.js-v4.21.2-blue?logo=express)
