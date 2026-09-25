@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Live Auction & Bidding Floor</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="navbar">
+    <div class="brand">
+      <div class="pulse-icon"></div>
+      <i class="fa-solid fa-gavel brand-icon"></i>
+      <h1>LIVE AUCTION <span>ENGINE</span></h1>
+    </div>
+
+    <!-- Room Switcher Dropdown -->
+    <div class="room-selector-container">
+      <label for="roomSelect"><i class="fa-solid fa-layer-group"></i> Room:</label>
+      <select id="roomSelect" class="room-select">
+        <option value="AUC_VINTAGE_99">1967 Fender Stratocaster (AUC_VINTAGE_99)</option>
+        <option value="AUC_SUPER_CAR_01">1989 Porsche 911 Speedster (AUC_SUPER_CAR_01)</option>
+        <option value="AUC_WATCH_42">Rolex Daytona Ref. 6239 (AUC_WATCH_42)</option>
+      </select>
+    </div>
+
+    <div class="header-right">
+      <!-- Live Audience Badge -->
+      <div class="live-viewer-badge">
+        <span class="live-dot"></span>
+        <i class="fa-solid fa-eye"></i>
+        <span id="liveViewerCount">1</span> VIEWERS
+      </div>
+
+      <!-- Sound FX Toggle -->
+      <button id="soundToggleBtn" class="sound-toggle-btn" title="Toggle Sound FX">
+        <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+      </button>
+
+      <!-- Username Identity Tag -->
+      <div class="user-identity">
+        <i class="fa-solid fa-user-astronaut"></i>
+        <input type="text" id="usernameInput" placeholder="Enter Handle..." value="Vikram">
+        <button id="updateHandleBtn" class="btn-sm">Set Handle</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner Alerts Area -->
+  <div id="alertContainer" class="alert-container">
+    <!-- Targeted Outbid Banner Alert -->
+    <div id="outbidAlert" class="banner-alert outbid-banner hidden">
+      <div class="alert-content">
+        <i class="fa-solid fa-triangle-exclamation alert-icon"></i>
+        <div>
+          <h4 class="alert-title">OUTBID ALERT!</h4>
+          <p id="outbidMessage">You have been outbid by <strong>Ananya</strong> at ₹54,000!</p>
+        </div>
+      </div>
+      <button class="alert-close" onclick="dismissOutbidAlert()">&times;</button>
+    </div>
+
+    <!-- Anti-Snipe Extension Banner -->
+    <div id="snipeAlert" class="banner-alert snipe-banner hidden">
+      <div class="alert-content">
+        <i class="fa-solid fa-bolt alert-icon"></i>
+        <div>
+          <h4 class="alert-title">ANTI-SNIPE TRIGGERED!</h4>
+          <p id="snipeMessage">Late bid detected in final seconds! Clock extended by +20s.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Trading Floor Container -->
+  <main class="trading-floor">
+
+    <!-- Left Column: Item Showcase Card -->
+    <section class="item-card card-box">
+      <div class="item-badge-container">
+        <span id="itemCategory" class="badge category-badge">Guitars & Instruments</span>
+        <span id="itemStatus" class="badge status-badge active-status">LIVE BIDDING</span>
+      </div>
+
+      <div class="item-image-wrapper">
+        <img id="itemImage" src="https://images.unsplash.com/photo-1550985616-10810253b84d?auto=format&fit=crop&w=800&q=80" alt="Auction Item">
+        <div class="image-overlay"></div>
+      </div>
+
+      <div class="item-details">
+        <h2 id="itemTitle">1967 Vintage Fender Stratocaster</h2>
+        <p id="itemDescription">Original condition rare electric guitar with sunburst finish and original hardshell case.</p>
+
+        <div class="item-meta">
+          <div class="meta-item">
+            <span class="meta-label">STARTING PRICE</span>
+            <span id="startingPrice" class="meta-value">₹50,000</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">MIN INCREMENT</span>
+            <span id="minIncrement" class="meta-value">₹2,000</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">AUCTION ID</span>
+            <span id="auctionIdDisplay" class="meta-value">AUC_VINTAGE_99</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Center Column: Bidding Console & Live Clock -->
+    <section class="bidding-console card-box">
+
+      <!-- Real-Time Countdown Timer Section -->
+      <div class="timer-section" id="timerContainer">
+        <div class="timer-label"><i class="fa-regular fa-clock"></i> TIME REMAINING</div>
+        <div class="timer-clock" id="timerClock">00:60</div>
+        <div class="timer-progress-bar">
+          <div id="timerProgress" class="timer-progress-fill" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- Current Highest Bid Ticker -->
+      <div class="price-ticker-box">
+        <div class="ticker-label">CURRENT LEADING BID</div>
+        <div class="price-ticker" id="currentBidTicker">₹50,000</div>
+        <div class="leader-tag" id="highestBidderTag">
+          <i class="fa-solid fa-crown"></i> Leading Bidder: <span id="highestBidderName">No Bids Yet</span>
+        </div>
+      </div>
+
+      <!-- Bid Rejection Notice Box -->
+      <div id="bidErrorBox" class="bid-error-box hidden">
+        <i class="fa-solid fa-circle-xmark"></i> <span id="bidErrorMessage">Bid too low</span>
+      </div>
+
+      <!-- Action Form -->
+      <div class="bidding-action-box" id="biddingControls">
+        <label for="bidAmountInput" class="input-label">PLACE YOUR BID (₹)</label>
+
+        <div class="input-action-group">
+          <div class="currency-input-wrapper">
+            <span class="currency-prefix">₹</span>
+            <input type="number" id="bidAmountInput" placeholder="Enter bid..." min="0" step="500">
+          </div>
+          <button id="placeBidBtn" class="btn-submit-bid">
+            <i class="fa-solid fa-gavel"></i> PLACE BID
+          </button>
+        </div>
+
+        <!-- Quick Increment Buttons -->
+        <div class="quick-increment-container">
+          <span class="quick-label">QUICK INCREMENTS:</span>
+          <div class="quick-buttons">
+            <button class="btn-quick" data-add="2000">+₹2,000</button>
+            <button class="btn-quick" data-add="5000">+₹5,000</button>
+            <button class="btn-quick" data-add="10000">+₹10,000</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Auction Concluded Winner Banner -->
+      <div id="auctionSoldCard" class="auction-sold-card hidden">
+        <div class="sold-icon"><i class="fa-solid fa-trophy"></i></div>
+        <h3>AUCTION CONCLUDED</h3>
+        <p id="soldWording">Winner: <strong>Vikram</strong> for ₹62,000</p>
+      </div>
+
+    </section>
+
+    <!-- Right Column: Auditable Bid Activity Feed -->
+    <section class="bid-history-panel card-box">
+      <div class="panel-header">
+        <h3><i class="fa-solid fa-list-ol"></i> LIVE BID HISTORY</h3>
+        <span class="badge feed-count" id="bidCountBadge">0 Bids</span>
+      </div>
+
+      <div class="history-table-wrapper">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>TIME</th>
+              <th>BIDDER</th>
+              <th>AMOUNT</th>
+            </tr>
+          </thead>
+          <tbody id="bidHistoryBody">
+            <tr class="empty-row">
+              <td colspan="3">No bids recorded yet. Be the first to bid!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Room Activity Feed -->
+      <div class="room-activity-log">
+        <div class="log-title"><i class="fa-solid fa-rss"></i> ROOM EVENTS</div>
+        <div id="roomEventsList" class="events-list">
+          <div class="event-item system">Welcome to the live auction floor.</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p> keralaXplore Real-Time Live Auction & Bidding Platform | Socket.io Engine v1.0</p>
+  </footer>
+
+  <!-- Include Socket.io Client Library -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- Main Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
